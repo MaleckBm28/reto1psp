@@ -142,7 +142,7 @@ public class ClienteChat implements Runnable {
 
             } else if (msg.startsWith("LISTA_USUARIOS:")) {
                 // Lista de usuarios: LISTA_USUARIOS:<user1>,<user2>,...
-                String[] usuarios = msg.substring(17).split(",");
+                String[] usuarios = msg.substring(15).split(",");
                 ventana.actualizarListaUsuarios(usuarios);
 
             } else if (msg.startsWith("INFO:")) {
