@@ -1,6 +1,5 @@
 package cliente;
 
-import java.awt.BorderLayout;
 import java.awt.EventQueue;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -9,20 +8,19 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
-import java.awt.Color; // <-- IMPORTANTE
+import java.awt.Color; // Importante para los colores
 import javax.swing.JTextField;
 import javax.swing.JLabel;
 import java.awt.Font;
 import javax.swing.JButton;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
-import javax.swing.UIManager; // <-- IMPORTANTE
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
-import java.awt.event.ActionListener;
+import java.awt.event.ActionListener; // Importante para los botones
+import java.awt.event.ActionEvent; // Importante para los botones
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.awt.event.ActionEvent;
 import javax.swing.JTextPane;
 import javax.swing.JScrollPane;
 import javax.swing.JOptionPane;
@@ -56,10 +54,9 @@ public class VentanaCliente extends JFrame {
     public static void main(String[] args) {
         EventQueue.invokeLater(new Runnable() {
             public void run() {
+                // --- SECCIÓN DE LOOK AND FEEL ELIMINADA ---
+                
                 try {
-                    // --- APLICA EL LOOK AND FEEL NATIVO ---
-                    UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-                    
                     VentanaCliente frame = new VentanaCliente();
                     frame.setVisible(true);
                 } catch (Exception e) {
@@ -77,13 +74,13 @@ public class VentanaCliente extends JFrame {
         cliente = new ClienteChat(this);
 
         setTitle("Chat Cliente");
-        setResizable(false); 
+        setResizable(false); // <-- NO RESPONSIVE
         setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         setBounds(100, 100, 725, 469); // El tamaño fijo original
         contentPane = new JPanel();
         contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
         setContentPane(contentPane);
-        contentPane.setLayout(null); 
+        contentPane.setLayout(null); // <-- LAYOUT FIJO
 
         // Listener para el cierre de ventana
         addWindowListener(new WindowAdapter() {
@@ -96,7 +93,7 @@ public class VentanaCliente extends JFrame {
             }
         });
 
-        // --- Fila Superior  ---
+        // --- Fila Superior (Conexión) ---
         
         JLabel ipText = new JLabel("IP : ");
         ipText.setFont(new Font("Tahoma", Font.PLAIN, 14));
@@ -136,10 +133,14 @@ public class VentanaCliente extends JFrame {
         usuField.setBounds(346, 27, 106, 24);
         contentPane.add(usuField);
 
-        // --- Botones Superiores  ---
+        // --- Botones Superiores (Con colores y SIN LAMBDAS) ---
         
         btnConectar = new JButton("Conectar");
-        btnConectar.addActionListener(e -> accionConectar());
+        btnConectar.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                accionConectar();
+            }
+        });
         btnConectar.setBackground(new Color(144, 238, 144)); // Verde claro
         btnConectar.setOpaque(true);
         btnConectar.setBorderPainted(false);
@@ -147,7 +148,11 @@ public class VentanaCliente extends JFrame {
         contentPane.add(btnConectar);
 
         btnDesconectar = new JButton("Desconectar");
-        btnDesconectar.addActionListener(e -> accionDesconectar());
+        btnDesconectar.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                accionDesconectar();
+            }
+        });
         btnDesconectar.setBackground(new Color(240, 128, 128)); // Rojo claro
         btnDesconectar.setOpaque(true);
         btnDesconectar.setBorderPainted(false);
@@ -159,11 +164,10 @@ public class VentanaCliente extends JFrame {
         lblEstado = new JLabel("Usuario Desconectado");
         lblEstado.setFont(new Font("Tahoma", Font.PLAIN, 13));
         lblEstado.setHorizontalAlignment(SwingConstants.CENTER);
-        // Centrado debajo de los botones
         lblEstado.setBounds(462, 60, 230, 24); 
         contentPane.add(lblEstado);
 
-        // --- Área de Chat  ---
+        // --- Área de Chat (Centro) ---
         
         scrollPane = new JScrollPane();
         scrollPane.setBounds(10, 90, 682, 287);
@@ -174,11 +178,15 @@ public class VentanaCliente extends JFrame {
         scrollPane.setViewportView(textPane);
         doc = textPane.getStyledDocument();
 
-        // --- Fila Inferior ---
+        // --- Fila Inferior (Envío de Mensajes) ---
         
         boxPrivado = new JCheckBox("Privado");
         boxPrivado.setFont(new Font("Tahoma", Font.PLAIN, 14));
-        boxPrivado.addActionListener(e -> filtrarComboUsuarios());
+        boxPrivado.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                filtrarComboUsuarios();
+            }
+        });
         boxPrivado.setBounds(10, 389, 82, 23);
         contentPane.add(boxPrivado);
 
@@ -187,13 +195,14 @@ public class VentanaCliente extends JFrame {
         txtPara.setBounds(99, 388, 48, 24);
         contentPane.add(txtPara);
 
-
+        // --- ComboBox Arreglado ---
         comboUsuarios = new JComboBox<>();
+        // comboUsuarios.setEditable(true); // ¡Línea ELIMINADA!
         comboUsuarios.setFont(new Font("Tahoma", Font.PLAIN, 14));
-        comboUsuarios.setBounds(143, 390, 180, 21);
+        comboUsuarios.setBounds(143, 390, 180, 21); // Ancho de 180px
         contentPane.add(comboUsuarios);
 
-
+        // --- Campo de Texto Arreglado ---
         txtMensaje = new JTextField();
         txtMensaje.setToolTipText("");
         txtMensaje.setFont(new Font("Tahoma", Font.PLAIN, 14));
@@ -201,10 +210,14 @@ public class VentanaCliente extends JFrame {
         txtMensaje.setBounds(333, 389, 239, 24); // Posición y ancho ajustados
         contentPane.add(txtMensaje);
 
-  
+        // --- Botón de Envío (Con color y SIN LAMBDAS) ---
         btnEnviar = new JButton("Enviar");
         btnEnviar.setFont(new Font("Tahoma", Font.PLAIN, 13));
-        btnEnviar.addActionListener(e -> accionEnviar());
+        btnEnviar.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                accionEnviar();
+            }
+        });
         btnEnviar.setBackground(new Color(173, 216, 230)); // Azul claro
         btnEnviar.setOpaque(true);
         btnEnviar.setBorderPainted(false);
@@ -214,7 +227,11 @@ public class VentanaCliente extends JFrame {
         // Estado inicial de la interfaz
         setEstadoConectado(false);
     }
-   
+    
+    // ==========================================================
+    // MÉTODOS (Sin cambios)
+    // ==========================================================
+    
     private void accionConectar() {
         String ip = ipField.getText().trim();
         String puertoStr = portField.getText().trim();
@@ -258,16 +275,18 @@ public class VentanaCliente extends JFrame {
     }
 
     public void agregarMensaje(String msg, Color color) {
-        SwingUtilities.invokeLater(() -> {
-            try {
-                SimpleAttributeSet attrs = new SimpleAttributeSet();
-                StyleConstants.setForeground(attrs, color);
-                StyleConstants.setFontSize(attrs, 14);
-                
-                doc.insertString(doc.getLength(), msg + "\n", attrs);
-                textPane.setCaretPosition(doc.getLength());
-            } catch (BadLocationException e) {
-                e.printStackTrace();
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                try {
+                    SimpleAttributeSet attrs = new SimpleAttributeSet();
+                    StyleConstants.setForeground(attrs, color);
+                    StyleConstants.setFontSize(attrs, 14);
+                    
+                    doc.insertString(doc.getLength(), msg + "\n", attrs);
+                    textPane.setCaretPosition(doc.getLength());
+                } catch (BadLocationException e) {
+                    e.printStackTrace();
+                }
             }
         });
     }
@@ -282,64 +301,70 @@ public class VentanaCliente extends JFrame {
     }
     
     private void filtrarComboUsuarios() {
-        SwingUtilities.invokeLater(() -> {
-            String seleccionado = (String) comboUsuarios.getSelectedItem();
-            comboUsuarios.removeAllItems();
-            
-            if (boxPrivado.isSelected()) {
-                comboUsuarios.setEnabled(true);
-                boolean reSeleccionar = false;
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                String seleccionado = (String) comboUsuarios.getSelectedItem();
+                comboUsuarios.removeAllItems();
                 
-                for (String user : cacheListaUsuarios) {
-                    if (!user.equals(usuField.getText().trim())) {
-                        comboUsuarios.addItem(user);
-                        if (user.equals(seleccionado)) {
-                            reSeleccionar = true;
+                if (boxPrivado.isSelected()) {
+                    comboUsuarios.setEnabled(true);
+                    boolean reSeleccionar = false;
+                    
+                    for (String user : cacheListaUsuarios) {
+                        if (!user.equals(usuField.getText().trim())) {
+                            comboUsuarios.addItem(user);
+                            if (user.equals(seleccionado)) {
+                                reSeleccionar = true;
+                            }
                         }
                     }
+                    
+                    if (reSeleccionar) {
+                        comboUsuarios.setSelectedItem(seleccionado);
+                    }
+                    
+                } else {
+                    comboUsuarios.addItem("Todos");
+                    comboUsuarios.setEnabled(false);
                 }
-                
-                if (reSeleccionar) {
-                    comboUsuarios.setSelectedItem(seleccionado);
-                }
-                
-            } else {
-                comboUsuarios.addItem("Todos");
-                comboUsuarios.setEnabled(false);
             }
         });
     }
 
     public void mostrarError(String msg) {
-        SwingUtilities.invokeLater(() -> {
-            JOptionPane.showMessageDialog(this, msg, "¡Ups! Algo salió mal", JOptionPane.WARNING_MESSAGE);
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                JOptionPane.showMessageDialog(VentanaCliente.this, msg, "¡Ups! Algo salió mal", JOptionPane.WARNING_MESSAGE);
+            }
         });
     }
 
     public void setEstadoConectado(boolean conectado) {
-        SwingUtilities.invokeLater(() -> {
-            ipField.setEnabled(!conectado);
-            portField.setEnabled(!conectado);
-            usuField.setEnabled(!conectado);
-            btnConectar.setEnabled(!conectado);
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                ipField.setEnabled(!conectado);
+                portField.setEnabled(!conectado);
+                usuField.setEnabled(!conectado);
+                btnConectar.setEnabled(!conectado);
 
-            btnDesconectar.setEnabled(conectado);
-            btnEnviar.setEnabled(conectado);
-            txtMensaje.setEnabled(conectado);
-            boxPrivado.setEnabled(conectado);
-            // 'comboUsuarios' se gestiona en filtrarComboUsuarios()
+                btnDesconectar.setEnabled(conectado);
+                btnEnviar.setEnabled(conectado);
+                txtMensaje.setEnabled(conectado);
+                boxPrivado.setEnabled(conectado);
+                // 'comboUsuarios' se gestiona en filtrarComboUsuarios()
 
-            if (conectado) {
-                lblEstado.setText("Conectado: " + usuField.getText());
-                lblEstado.setForeground(new Color(0, 128, 0)); // Verde
-                filtrarComboUsuarios(); // Actualiza el combo al conectar
-            } else {
-                lblEstado.setText("Usuario Desconectado");
-                lblEstado.setForeground(Color.RED);
-                
-                this.cacheListaUsuarios = new String[0]; 
-                boxPrivado.setSelected(false);
-                filtrarComboUsuarios(); // Limpia y deshabilita el combo
+                if (conectado) {
+                    lblEstado.setText("Conectado: " + usuField.getText());
+                    lblEstado.setForeground(new Color(0, 128, 0)); // Verde
+                    filtrarComboUsuarios(); // Actualiza el combo al conectar
+                } else {
+                    lblEstado.setText("Usuario Desconectado");
+                    lblEstado.setForeground(Color.RED);
+                    
+                    cacheListaUsuarios = new String[0]; 
+                    boxPrivado.setSelected(false);
+                    filtrarComboUsuarios(); // Limpia y deshabilita el combo
+                }
             }
         });
     }
