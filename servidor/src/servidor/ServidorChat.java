@@ -18,9 +18,17 @@ public class ServidorChat {
 
     // Puerto en el que el servidor escuchará
     private static final int PUERTO = 9090;
+    
+    // --- LÍMITE DE CONEXIONES ---
+    public static final int MAX_CONEXIONES = 3; 
+
+    // --- CÓDIGOS DE ESTADO DE CONEXIÓN ---
+    public static final int AGREGADO_OK = 0;
+    public static final int ERROR_NOMBRE_DUPLICADO = 1;
+    public static final int ERROR_SERVIDOR_LLENO = 2;
+    // ---------------------------------
 
     // Mapa sincronizado para almacenar los usuarios conectados (Nombre -> Stream de salida)
-    // Esto es crucial para la concurrencia (thread-safety)
     private static Map<String, PrintWriter> usuariosConectados = Collections.synchronizedMap(new HashMap<>());
 
     // Formateador de fecha para los logs
@@ -32,14 +40,12 @@ public class ServidorChat {
 
         try {
             serverSocket = new ServerSocket(PUERTO);
-            log("Servidor iniciado. Esperando clientes...");
+            log("Servidor iniciado. Esperando clientes (máximo " + MAX_CONEXIONES + ")...");
 
             // Bucle infinito para aceptar conexiones de clientes
             while (true) {
-                // accept() es bloqueante: espera hasta que un cliente se conecte
                 Socket socketCliente = serverSocket.accept();
                 
-                // Cuando un cliente se conecta, crea un nuevo hilo para manejarlo
                 ManejadorCliente manejador = new ManejadorCliente(socketCliente);
                 new Thread(manejador).start();
             }
@@ -47,7 +53,6 @@ public class ServidorChat {
         } catch (IOException e) {
             logError("Error al iniciar el servidor: " + e.getMessage());
         } finally {
-            // Cerrar el socket principal si algo sale mal
             if (serverSocket != null) {
                 try {
                     serverSocket.close();
@@ -76,22 +81,40 @@ public class ServidorChat {
         String hora = formatter.format(new Date());
         System.err.println("[" + hora + " ERROR] " + mensaje);
     }
+    
+    /**
+     * Devuelve el número actual de usuarios conectados.
+     * @return El número de usuarios.
+     */
+    public static int getNumeroUsuarios() {
+        return usuariosConectados.size();
+    }
 
     /**
-     * Añade un nuevo usuario a la lista de conectados.
+     * Añade un nuevo usuario a la lista de conectados, comprobando el límite
+     * y los nombres duplicados de forma atómica (thread-safe).
      * @param username El nombre del usuario.
      * @param writer El PrintWriter asociado al usuario.
-     * @return true si se añadió, false si el nombre ya existía.
+     * @return Un código de estado: AGREGADO_OK, ERROR_SERVIDOR_LLENO, o ERROR_NOMBRE_DUPLICADO.
      */
-    public static boolean agregarUsuario(String username, PrintWriter writer) {
-        // Usamos synchronized para asegurar que la comprobación y la inserción
-        // sean atómicas, evitando que dos hilos registren el mismo nombre.
+    public static int agregarUsuario(String username, PrintWriter writer) {
+        // Usamos synchronized para asegurar que todas las comprobaciones
+        // y la inserción sean ATÓMICAS.
         synchronized (usuariosConectados) {
-            if (usuariosConectados.containsKey(username)) {
-                return false; // El usuario ya existe
+            
+            // 1. Comprobar si está lleno
+            if (usuariosConectados.size() >= MAX_CONEXIONES) {
+                return ERROR_SERVIDOR_LLENO;
             }
+            
+            // 2. Comprobar si está duplicado
+            if (usuariosConectados.containsKey(username)) {
+                return ERROR_NOMBRE_DUPLICADO;
+            }
+            
+            // 3. Si todo está bien, añadirlo
             usuariosConectados.put(username, writer);
-            return true;
+            return AGREGADO_OK;
         }
     }
 
@@ -107,12 +130,9 @@ public class ServidorChat {
 
     /**
      * Envía un mensaje a TODOS los usuarios conectados.
-     * (Requisito: Retransmitir mensajes públicos)
      * @param mensaje El mensaje a retransmitir.
      */
     public static void broadcast(String mensaje) {
-        // Sincronizamos para evitar problemas si un usuario se añade/elimina
-        // mientras estamos iterando la lista.
         synchronized (usuariosConectados) {
             for (PrintWriter writer : usuariosConectados.values()) {
                 writer.println(mensaje);
@@ -122,7 +142,6 @@ public class ServidorChat {
 
     /**
      * Envía un mensaje privado a un usuario específico.
-     * (Requisito: Enviar mensajes privados)
      * @param destinatario El nombre del usuario destino.
      * @param mensaje El mensaje a enviar.
      * @return true si se envió, false si el destinatario no se encontró.
