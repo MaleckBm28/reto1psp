@@ -100,7 +100,7 @@ public class ClienteChat implements Runnable {
     }
 
     /*
-     * Hilo de escucha (Requisito 6).
+     * Hilo de escucha 
      * Escucha permanentemente los mensajes del servidor.
      */
     @Override
